@@ -4,7 +4,8 @@ export function applySchemaMap(
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {}
   for (const [rawKey, canonicalKey] of Object.entries(schemaMap)) {
-    if (raw[rawKey] !== undefined) {
+    // Use != null (loose) to drop both null and undefined — consistent with quality scorer
+    if (raw[rawKey] != null) {
       result[canonicalKey] = raw[rawKey]
     }
   }

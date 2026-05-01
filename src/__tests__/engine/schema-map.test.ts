@@ -23,6 +23,12 @@ describe('applySchemaMap', () => {
     const map = { commodity: 'name', modal_price: 'price_rupees' }
     expect(applySchemaMap(raw, map)).toEqual({ name: 'Wheat' })
   })
+
+  it('omits null source fields (consistent with quality scorer)', () => {
+    const raw = { commodity: 'Wheat', modal_price: null }
+    const map = { commodity: 'name', modal_price: 'price_rupees' }
+    expect(applySchemaMap(raw, map)).toEqual({ name: 'Wheat' })
+  })
 })
 
 describe('applySchemaMapToArray', () => {
