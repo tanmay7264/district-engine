@@ -5,7 +5,7 @@ import { fetchCsv } from './adapters/csv-adapter'
 import { applySchemaMapToArray } from './schema-map'
 import { computeQualityScore } from './quality-scorer'
 import { MODULE_FIELDS } from './module-fields'
-import type { DataSource, District } from '@prisma/client'
+import type { DataSource, District, Prisma } from '@prisma/client'
 
 export async function runIngestion(): Promise<void> {
   const sources = await prisma.dataSource.findMany({ where: { active: true } })
@@ -98,11 +98,11 @@ async function ingestOne(source: DataSource, district: District): Promise<boolea
         districtSlug: district.slug,
         module: source.module,
         sourceId: source.id,
-        data: mapped,
+        data: mapped as Prisma.InputJsonValue,
         qualityScore,
         fetchedAt,
       },
-      update: { data: mapped, qualityScore, fetchedAt },
+      update: { data: mapped as Prisma.InputJsonValue, qualityScore, fetchedAt },
     })
 
     await prisma.ingestionLog.create({
