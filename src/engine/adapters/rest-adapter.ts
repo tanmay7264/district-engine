@@ -24,6 +24,8 @@ export async function fetchRest(
     } catch (err) {
       clearTimeout(timer)
       lastError = err as Error
+      // Do not retry permanent HTTP errors (4xx) — only network/transport errors
+      if (lastError.message.startsWith('HTTP 4')) throw lastError
       if (attempt < maxRetries - 1) {
         await new Promise(r => setTimeout(r, 2 ** attempt * 500))
       }

@@ -1,7 +1,11 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { fetchCsv } from '@/engine/adapters/csv-adapter'
 
 describe('fetchCsv', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('parses CSV text into array of objects', async () => {
     const csvText = 'name,price\nWheat,2100\nRice,1800'
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({

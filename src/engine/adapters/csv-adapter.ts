@@ -18,7 +18,7 @@ export async function fetchCsv(url: string, timeoutMs = 30_000): Promise<Adapter
 }
 
 function parseCsv(text: string): Record<string, string>[] {
-  const lines = text.trim().split('\n')
+  const lines = text.trim().split(/\r?\n/)
   if (lines.length < 2) return []
   const headers = lines[0].split(',').map(h => h.trim())
   return lines.slice(1).map(line => {
