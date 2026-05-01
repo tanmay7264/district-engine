@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     orderBy: { name: 'asc' },
   })
 
-  const data = districts.map(d => ({
+  const data = districts.map((d: typeof districts[number]) => ({
     slug: d.slug,
     name: d.name,
     nameLocal: d.nameLocal,
