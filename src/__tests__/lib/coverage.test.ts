@@ -28,7 +28,13 @@ describe('recomputeCoverage', () => {
       expect.objectContaining({
         where: { districtSlug: 'pune' },
         create: expect.objectContaining({
+          overallScore: 59, // Math.round((85 + 72 + 20) / 3)
           activeModules: 2, // crops + budget pass threshold of 40
+          modules: { crops: 85, budget: 72, weather: 20 },
+        }),
+        update: expect.objectContaining({
+          overallScore: 59,
+          activeModules: 2,
           modules: { crops: 85, budget: 72, weather: 20 },
         }),
       }),
@@ -44,6 +50,7 @@ describe('recomputeCoverage', () => {
     expect(prisma.districtCoverage.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         create: expect.objectContaining({ overallScore: 0, activeModules: 0 }),
+        update: expect.objectContaining({ overallScore: 0, activeModules: 0 }),
       }),
     )
   })
