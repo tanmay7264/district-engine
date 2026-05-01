@@ -13,7 +13,7 @@ describe('computeQualityScore', () => {
     expect(score).toBe(100)
   })
 
-  it('returns 0 when no required fields present', () => {
+  it('scores below threshold when no required fields present', () => {
     const score = computeQualityScore({
       data: {},
       requiredFields: ['name', 'price_rupees'],

@@ -10,9 +10,10 @@ export function computeQualityScore(input: QualityInput): number {
   const { data, requiredFields, optionalFields, fetchedAt, refreshHours } = input
 
   // Required field completeness: 60% weight
-  const requiredScore = requiredFields.length === 0
-    ? 1
-    : requiredFields.filter(f => data[f] != null).length / requiredFields.length
+  // If required fields are defined but none are present, data is unusable — score 0.
+  const presentRequired = requiredFields.filter(f => data[f] != null).length
+  if (requiredFields.length > 0 && presentRequired === 0) return 0
+  const requiredScore = requiredFields.length === 0 ? 1 : presentRequired / requiredFields.length
 
   // Optional field completeness: 20% weight
   const optionalScore = optionalFields.length === 0
@@ -23,12 +24,5 @@ export function computeQualityScore(input: QualityInput): number {
   const ageHours = (Date.now() - fetchedAt.getTime()) / 3_600_000
   const recencyScore = Math.max(0, 1 - ageHours / (refreshHours * 2))
 
-  const compositeScore = (requiredScore * 0.6 + optionalScore * 0.2 + recencyScore * 0.2) * 100
-
-  // If no required fields are present, further penalize by reducing the score
-  if (requiredScore === 0) {
-    return Math.round(compositeScore * 0.9)
-  }
-
-  return Math.round(compositeScore)
+  return Math.round((requiredScore * 0.6 + optionalScore * 0.2 + recencyScore * 0.2) * 100)
 }
