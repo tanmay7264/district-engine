@@ -16,15 +16,21 @@ export async function runIngestion(): Promise<void> {
 
     const districts = await getTargetDistricts(source)
 
+    let anySuccess = false
     for (const district of districts) {
-      await ingestOne(source, district)
+      const ok = await ingestOne(source, district)
+      if (ok) anySuccess = true
       affectedDistricts.add(district.slug)
     }
 
-    await prisma.dataSource.update({
-      where: { id: source.id },
-      data: { lastFetchedAt: new Date() },
-    })
+    // Only mark as fetched when at least one district succeeded — prevents
+    // a total-failure run from suppressing the source for a full refresh window
+    if (anySuccess) {
+      await prisma.dataSource.update({
+        where: { id: source.id },
+        data: { lastFetchedAt: new Date() },
+      })
+    }
   }
 
   for (const slug of affectedDistricts) {
@@ -50,8 +56,10 @@ async function getTargetDistricts(source: DataSource): Promise<District[]> {
   return prisma.district.findMany({ where: { active: true } })
 }
 
-async function ingestOne(source: DataSource, district: District): Promise<void> {
+/** Returns true on success, false on error. */
+async function ingestOne(source: DataSource, district: District): Promise<boolean> {
   const start = Date.now()
+  const fetchedAt = new Date()
   const url = source.urlTemplate.replace('{district_code}', district.districtCode)
 
   try {
@@ -64,14 +72,18 @@ async function ingestOne(source: DataSource, district: District): Promise<void> 
     const mapped = applySchemaMapToArray(rawArray as Record<string, unknown>[], schemaMap)
 
     const fields = MODULE_FIELDS[source.module] ?? { required: [], optional: [] }
+    // Average quality across all records (not just first) for accurate representation
     const qualityScore = mapped.length > 0
-      ? computeQualityScore({
-          data: mapped[0],
-          requiredFields: fields.required,
-          optionalFields: fields.optional,
-          fetchedAt: new Date(),
-          refreshHours: source.refreshHours,
-        })
+      ? Math.round(
+          mapped.reduce((sum, record) =>
+            sum + computeQualityScore({
+              data: record,
+              requiredFields: fields.required,
+              optionalFields: fields.optional,
+              fetchedAt,
+              refreshHours: source.refreshHours,
+            }), 0) / mapped.length
+        )
       : 0
 
     await prisma.moduleData.upsert({
@@ -88,32 +100,34 @@ async function ingestOne(source: DataSource, district: District): Promise<void> 
         sourceId: source.id,
         data: mapped,
         qualityScore,
-        fetchedAt: new Date(),
+        fetchedAt,
       },
-      update: { data: mapped, qualityScore, fetchedAt: new Date() },
+      update: { data: mapped, qualityScore, fetchedAt },
     })
 
     await prisma.ingestionLog.create({
       data: {
         sourceId: source.id,
         districtSlug: district.slug,
-        fetchedAt: new Date(),
+        fetchedAt,
         recordCount: mapped.length,
         qualityScore,
         durationMs: Date.now() - start,
       },
     })
+    return true
   } catch (err) {
     await prisma.ingestionLog.create({
       data: {
         sourceId: source.id,
         districtSlug: district.slug,
-        fetchedAt: new Date(),
+        fetchedAt,
         recordCount: 0,
         qualityScore: 0,
         error: String(err),
         durationMs: Date.now() - start,
       },
     })
+    return false
   }
 }
