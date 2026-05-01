@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model District {
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  name         String
+  nameLocal    String
+  state        String
+  districtCode String    @unique
+  lat          Float
+  lng          Float
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  coverage     DistrictCoverage?
+  moduleData   ModuleData[]
+
+  @@index([state, active])
+}
+
+model DataSource {
+  id            String    @id
+  name          String
+  type          String
+  urlTemplate   String
+  module        String
+  stateSlug     String?
+  districtCodes String[]
+  refreshHours  Int
+  schemaMap     Json
+  active        Boolean   @default(true)
+  lastFetchedAt DateTime?
+  uptime30d     Float?
+  logs          IngestionLog[]
+  moduleData    ModuleData[]
+}
+
+model ModuleData {
+  id           String     @id @default(cuid())
+  districtSlug String
+  district     District   @relation(fields: [districtSlug], references: [slug])
+  module       String
+  sourceId     String
+  source       DataSource @relation(fields: [sourceId], references: [id])
+  data         Json
+  qualityScore Int
+  fetchedAt    DateTime
+  createdAt    DateTime   @default(now())
+
+  @@unique([districtSlug, module, sourceId])
+  @@index([districtSlug, module])
+}
+
+model IngestionLog {
+  id           String     @id @default(cuid())
+  sourceId     String
+  source       DataSource @relation(fields: [sourceId], references: [id])
+  districtSlug String?
+  fetchedAt    DateTime
+  recordCount  Int
+  qualityScore Int
+  error        String?
+  durationMs   Int
+
+  @@index([sourceId, fetchedAt])
+}
+
+model DistrictCoverage {
+  districtSlug   String   @id
+  district       District @relation(fields: [districtSlug], references: [slug])
+  modules        Json
+  overallScore   Int
+  activeModules  Int
+  lastComputedAt DateTime
+}
