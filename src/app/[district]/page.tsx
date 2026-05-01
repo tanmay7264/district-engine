@@ -51,7 +51,6 @@ export default async function DistrictPage({ params }: Ctx) {
               key={row.module}
               districtSlug={slug}
               module={row.module}
-              label={row.module}
               qualityScore={row.qualityScore}
               fetchedAt={row.fetchedAt}
             />

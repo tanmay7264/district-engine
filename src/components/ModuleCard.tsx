@@ -4,7 +4,6 @@ import { CoverageBadge } from './CoverageBadge'
 interface Props {
   districtSlug: string
   module: string
-  label: string
   qualityScore: number
   fetchedAt: Date | string | null
 }

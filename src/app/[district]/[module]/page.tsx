@@ -17,7 +17,7 @@ export default async function ModulePage({ params }: Ctx) {
   })
   if (!row) notFound()
 
-  const records = Array.isArray(row.data) ? row.data : [row.data]
+  const records = Array.isArray(row.data) ? row.data as Record<string, unknown>[] : [row.data as Record<string, unknown>]
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-12">
@@ -37,29 +37,33 @@ export default async function ModulePage({ params }: Ctx) {
           {row.source.name}
           <ExternalLink className="h-3 w-3" />
         </a>
-        <span>· Fetched {new Date(row.fetchedAt).toLocaleString()}</span>
+        <span>· Fetched {new Date(row.fetchedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-lg border border-gray-200">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              {Object.keys(records[0] as object).map(key => (
-                <th key={key} className="px-4 py-3 text-left font-medium text-gray-600">{key}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {(records as Record<string, unknown>[]).map((row, i) => (
-              <tr key={i} className="hover:bg-gray-50">
-                {Object.values(row).map((val, j) => (
-                  <td key={j} className="px-4 py-3 text-gray-700">{String(val ?? '—')}</td>
+      {records.length === 0 ? (
+        <p className="mt-8 text-gray-400">No records available for this module.</p>
+      ) : (
+        <div className="mt-6 overflow-x-auto rounded-lg border border-gray-200">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                {Object.keys(records[0]).map(key => (
+                  <th key={key} className="px-4 py-3 text-left font-medium text-gray-600">{key}</th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {records.map((record, i) => (
+                <tr key={i} className="hover:bg-gray-50">
+                  {Object.entries(record).map(([key, val]) => (
+                    <td key={key} className="px-4 py-3 text-gray-700">{String(val ?? '—')}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </main>
   )
 }
