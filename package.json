@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:seed:mh": "npx tsx --env-file .env prisma/seed-mh.ts"
+    "db:seed:mh": "npx tsx --env-file .env prisma/seed-mh.ts",
+    "worker": "npx tsx worker/scheduler.ts",
+    "worker:dev": "npx tsx --watch worker/scheduler.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
