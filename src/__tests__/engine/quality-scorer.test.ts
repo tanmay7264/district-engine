@@ -13,7 +13,7 @@ describe('computeQualityScore', () => {
     expect(score).toBe(100)
   })
 
-  it('scores below threshold when no required fields present', () => {
+  it('returns 0 when no required fields are present', () => {
     const score = computeQualityScore({
       data: {},
       requiredFields: ['name', 'price_rupees'],
@@ -21,7 +21,7 @@ describe('computeQualityScore', () => {
       fetchedAt: new Date(),
       refreshHours: 6,
     })
-    expect(score).toBeLessThan(40)
+    expect(score).toBe(0)
   })
 
   it('penalizes stale data', () => {
