@@ -6,7 +6,7 @@
 
 **Architecture:** A Source Registry stores self-describing API configs; an Ingestion Engine fetches, maps, scores, and stores data automatically; a public REST API exposes all data with lineage; a Next.js dashboard renders only modules that pass a quality threshold.
 
-**Tech Stack:** Next.js 16, TypeScript, Prisma 6, Neon PostgreSQL, Upstash Redis, BullMQ, Vitest, Tailwind CSS v4
+**Tech Stack:** Next.js 16, TypeScript, Prisma 7, Neon PostgreSQL, Upstash Redis, BullMQ, Vitest, Tailwind CSS v4
 
 ---
 
