@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { QUALITY_THRESHOLD } from '@/lib/constants'
 
 type Ctx = { params: Promise<{ slug: string }> }
-
-const QUALITY_THRESHOLD = 40
 
 export async function GET(_req: NextRequest, ctx: Ctx) {
   const { slug } = await ctx.params

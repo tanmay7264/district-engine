@@ -1,6 +1,5 @@
 import { prisma } from './db'
-
-const QUALITY_THRESHOLD = 40
+import { QUALITY_THRESHOLD } from './constants'
 
 export async function recomputeCoverage(districtSlug: string): Promise<void> {
   const rows = await prisma.moduleData.findMany({ where: { districtSlug } })
